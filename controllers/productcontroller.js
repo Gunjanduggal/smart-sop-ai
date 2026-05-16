@@ -1,6 +1,8 @@
 const Product = require('../models/Product');
 
-const { generateAIData } = require('../services/aiService');
+const {
+    generateAIData
+} = require('../services/aiService');
 
 const addProduct = async (req, res) => {
 

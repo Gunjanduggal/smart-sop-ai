@@ -13,18 +13,22 @@ const processInventoryCommand = async (req, res) => {
         const aiResult =
             await analyzeInventoryCommand(command);
 
-        const product = await Product.findOne({
-            name: aiResult.productName
-        });
+        const product =
+            await Product.findOne({
+                name: aiResult.productName
+            });
 
         if (!product) {
+
             return res.status(404).json({
+                success: false,
                 message: 'Product not found',
                 aiResult
             });
         }
 
-        product.stock = aiResult.newQuantity;
+        product.stock =
+            aiResult.newQuantity;
 
         await product.save();
 
