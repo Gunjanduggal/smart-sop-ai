@@ -6,17 +6,19 @@ const addProduct = async (req, res) => {
 
     try {
 
-        const { name, price } = req.body;
+        const { name, price, stock } = req.body;
 
         const aiData = await generateAIData(name);
 
         const product = await Product.create({
-            name,
-            price,
-            category: aiData.category,
-            description: aiData.description,
-            tags: aiData.tags
-        });
+    name,
+    price,
+    stock,
+
+    category: aiData.category,
+    description: aiData.description,
+    tags: aiData.tags
+});
 
         res.status(201).json(product);
 
