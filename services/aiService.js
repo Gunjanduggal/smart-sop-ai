@@ -61,6 +61,7 @@ Example format:
         const parsed = JSON.parse(text);
 
         return {
+
             category:
                 parsed.category || 'General',
 
@@ -82,9 +83,12 @@ Example format:
         );
 
         return {
+
             category: 'General',
+
             description:
                 'AI generation failed',
+
             tags: ['product']
         };
     }

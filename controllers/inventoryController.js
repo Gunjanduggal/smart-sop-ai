@@ -1,4 +1,7 @@
+// controllers/inventoryController.js
+
 const Product = require('../models/Product');
+const InventoryLog = require('../models/InventoryLog');
 
 const {
     analyzeInventoryCommand
@@ -10,14 +13,17 @@ const processInventoryCommand = async (req, res) => {
 
         const { command } = req.body;
 
+        // AI ANALYSIS
         const aiResult =
             await analyzeInventoryCommand(command);
 
+        // FIND PRODUCT
         const product =
             await Product.findOne({
                 name: aiResult.productName
             });
 
+        // PRODUCT NOT FOUND
         if (!product) {
 
             return res.status(404).json({
@@ -27,11 +33,41 @@ const processInventoryCommand = async (req, res) => {
             });
         }
 
+        // VALIDATE DECREASE STOCK
+        if (aiResult.action === 'decrease') {
+
+            if (product.stock < aiResult.newQuantity) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid stock update'
+                });
+            }
+        }
+
+        // UPDATE STOCK
         product.stock =
             aiResult.newQuantity;
 
+        // SAVE UPDATED PRODUCT
         await product.save();
 
+        // CREATE INVENTORY LOG
+        await InventoryLog.create({
+
+            productName: product.name,
+
+            oldQuantity:
+                aiResult.oldQuantity,
+
+            newQuantity:
+                aiResult.newQuantity,
+
+            action:
+                aiResult.action
+        });
+
+        // RESPONSE
         res.json({
             success: true,
 
