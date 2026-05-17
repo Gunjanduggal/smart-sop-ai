@@ -1,36 +1,22 @@
-const mongoose = require('mongoose');
+﻿const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
+    name: { type: String, required: true, trim: true },
+    nameKey: { type: String, index: true },
+    price: { type: Number, required: true, min: 0 },
+    stock: { type: Number, default: 0, min: 0 },
+    category: String,
+    description: String,
+    gstRate: Number,
+    hsnCode: String,
+    tags: [String]
+}, { timestamps: true });
 
-    name: {
-        type: String,
-        required: true
-    },
-
-    price: {
-        type: Number,
-        required: true
-    },
-
-    stock: {
-        type: Number,
-        default: 0
-    },
-
-    category: {
-        type: String
-    },
-
-    description: {
-        type: String
-    },
-
-    tags: {
-        type: [String]
+productSchema.pre('validate', function() {
+    if (this.name) {
+        this.name = this.name.trim();
+        this.nameKey = this.name.toLowerCase();
     }
-
-}, {
-    timestamps: true
 });
 
 module.exports = mongoose.model('Product', productSchema);

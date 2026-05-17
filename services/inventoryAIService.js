@@ -1,44 +1,46 @@
-const analyzeInventoryCommand = async (command) => {
+﻿const analyzeInventoryCommand = async (command) => {
+    const normalized = command.trim().toLowerCase();
+    const fromToMatch = normalized.match(/^(increase|decrease|set|update)\s+(.+?)\s+(?:inventory|stock)\s+from\s+(\d+)\s+to\s+(\d+)$/i);
+    const amountMatch = normalized.match(/^(increase|decrease)\s+(.+?)\s+(?:inventory|stock)\s+by\s+(\d+)$/i);
+    const setMatch = normalized.match(/^(set|update)\s+(.+?)\s+(?:inventory|stock)\s+to\s+(\d+)$/i);
 
-    command = command.toLowerCase();
-
-    let action = '';
-    let productName = '';
-    let oldQuantity = 0;
-    let newQuantity = 0;
-
-    // DETECT ACTION
-    if (command.includes('increase')) {
-        action = 'increase';
+    if (fromToMatch) {
+        const [, rawAction, productName, oldQuantity, newQuantity] = fromToMatch;
+        return {
+            action: rawAction === 'set' || rawAction === 'update' ? 'set' : rawAction,
+            mode: 'set',
+            productName: productName.trim(),
+            statedOldQuantity: Number(oldQuantity),
+            requestedQuantity: Number(newQuantity)
+        };
     }
 
-    if (command.includes('decrease')) {
-        action = 'decrease';
+    if (amountMatch) {
+        const [, action, productName, amount] = amountMatch;
+        return {
+            action,
+            mode: 'delta',
+            productName: productName.trim(),
+            requestedQuantity: Number(amount)
+        };
     }
 
-    // DETECT PRODUCT
-    if (command.includes('laptop')) {
-        productName = 'Laptop';
-    }
-
-    // EXTRACT NUMBERS
-    const numbers = command.match(/\d+/g);
-
-    if (numbers && numbers.length >= 2) {
-
-        oldQuantity = parseInt(numbers[0]);
-
-        newQuantity = parseInt(numbers[1]);
+    if (setMatch) {
+        const [, , productName, amount] = setMatch;
+        return {
+            action: 'set',
+            mode: 'set',
+            productName: productName.trim(),
+            requestedQuantity: Number(amount)
+        };
     }
 
     return {
-        action,
-        productName,
-        oldQuantity,
-        newQuantity
+        action: '',
+        mode: '',
+        productName: '',
+        requestedQuantity: 0
     };
 };
 
-module.exports = {
-    analyzeInventoryCommand
-};
+module.exports = { analyzeInventoryCommand };

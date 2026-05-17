@@ -1,41 +1,44 @@
-const Product = require('../models/Product');
+﻿const Product = require('../models/Product');
+const { generateAIData } = require('../services/aiService');
 
-const {
-    generateAIData
-} = require('../services/aiService');
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-
-// ADD PRODUCT
 const addProduct = async (req, res) => {
-
     try {
+        const name = String(req.body.name || '').trim();
+        const price = Number(req.body.price);
+        const stock = Number(req.body.stock);
 
-        const { name, price, stock } = req.body;
+        if (!name || Number.isNaN(price) || Number.isNaN(stock)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, price, and stock are required'
+            });
+        }
 
-        // CHECK IF PRODUCT EXISTS
         const existingProduct = await Product.findOne({
-            name
+            $or: [
+                { nameKey: name.toLowerCase() },
+                { name: new RegExp(`^${escapeRegex(name)}$`, 'i') }
+            ]
         });
 
         if (existingProduct) {
-
             return res.status(400).json({
                 success: false,
                 message: 'Product already exists'
             });
         }
 
-        // AI DATA
         const aiData = await generateAIData(name);
-
-        // CREATE PRODUCT
         const product = await Product.create({
             name,
             price,
             stock,
-
             category: aiData.category,
             description: aiData.description,
+            gstRate: aiData.gstRate,
+            hsnCode: aiData.hsnCode,
             tags: aiData.tags
         });
 
@@ -44,37 +47,18 @@ const addProduct = async (req, res) => {
             message: 'Product added successfully',
             product
         });
-
     } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-
-// GET PRODUCTS
 const getProducts = async (req, res) => {
-
     try {
-
-        const products = await Product.find();
-
+        const products = await Product.find().sort({ createdAt: -1 });
         res.json(products);
-
     } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-
-module.exports = {
-    addProduct,
-    getProducts
-};
+module.exports = { addProduct, getProducts };

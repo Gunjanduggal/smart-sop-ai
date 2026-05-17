@@ -1,10 +1,6 @@
-const express = require('express');
-
+﻿const express = require('express');
 const router = express.Router();
-
-const {
-    processInventoryCommand
-} = require('../controllers/inventoryController');
+const { processInventoryCommand } = require('../controllers/inventorycontroller');
 
 router.post('/update', processInventoryCommand);
 
