@@ -11,6 +11,9 @@ require('./routes/productroutes');
 const inventoryRoutes =
 require('./routes/inventoryRoutes');
 
+const insightsRoutes =
+require('./routes/insightsRoutes');
+
 const app = express();
 
 connectDB();
@@ -25,6 +28,8 @@ app.get('/', (req, res) => {
 app.use('/api/products', productRoutes);
 
 app.use('/api/inventory', inventoryRoutes);
+
+app.use('/api/insights', insightsRoutes);
 
 const PORT = process.env.PORT || 5000;
 
